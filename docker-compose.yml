@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  client:
+    image: client_dev
+    build: 
+      context: ./client/
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API: ${REACT_APP_API}
+    container_name: client_dev
+    ports: 
+      - ${CLIENT_PORT}:80
+    environment:
+      REACT_APP_STRIPE_KEY: ${REACT_APP_STRIPE_KEY}
+      REACT_APP_API: ${REACT_APP_API}
+
+  mongo_db:
+    container_name: db_container
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongo_db:/data/db
+
+  api:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+    ports:
+      - ${API_PORT}:${API_PORT}
+    environment:
+      PORT: ${API_PORT}
+      DATABASE: mongodb://mongo_db:27017/ecom-mern
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      STRIPE_SECRET: ${STRIPE_SECRET}
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_db: {}
+
